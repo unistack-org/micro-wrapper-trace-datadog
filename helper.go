@@ -3,7 +3,7 @@ package datadog
 import (
 	"context"
 
-	log "github.com/micro/go-log"
+	log "github.com/micro/go-micro/util/log"
 
 	"github.com/micro/go-micro/metadata"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
