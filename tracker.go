@@ -42,8 +42,8 @@ func newRequestTracker(req requestDescriptor, profile *StatsProfile) *tracker {
 	}
 }
 
-// newPublicationTracker creates a new tracker for a publication (client or server).
-func newPublicationTracker(pub publicationDescriptor, profile *StatsProfile) *tracker {
+// newEventTracker creates a new tracker for a publication (client or server).
+func newEventTracker(pub publicationDescriptor, profile *StatsProfile) *tracker {
 	return &tracker{
 		profile:     profile,
 		reqService:  "micro.pubsub",

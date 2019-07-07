@@ -34,7 +34,7 @@ func (d *ddWrapper) Call(ctx context.Context, req client.Request, rsp interface{
 }
 
 func (d *ddWrapper) Publish(ctx context.Context, p client.Message, opts ...client.PublishOption) (err error) {
-	t := newPublicationTracker(p, ClientProfile)
+	t := newEventTracker(p, ClientProfile)
 	ctx = t.StartSpanFromContext(ctx)
 
 	defer func() {
@@ -91,7 +91,7 @@ func NewHandlerWrapper() server.HandlerWrapper {
 func NewSubscriberWrapper() server.SubscriberWrapper {
 	return func(next server.SubscriberFunc) server.SubscriberFunc {
 		return func(ctx context.Context, msg server.Message) (err error) {
-			t := newPublicationTracker(msg, ServerProfile)
+			t := newEventTracker(msg, ServerProfile)
 			ctx = t.StartSpanFromContext(ctx)
 			defer func() {
 				t.finishWithError(err, noDebugStack)
