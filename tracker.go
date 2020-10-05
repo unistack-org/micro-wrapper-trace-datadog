@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	microerr "github.com/unistack-org/micro/v3/errors"
 	"google.golang.org/grpc/codes"
-
-	microerr "github.com/micro/go-micro/v2/errors"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -53,7 +52,8 @@ func newEventTracker(pub publicationDescriptor, profile *StatsProfile) *tracker 
 
 // start monitoring a request. You can choose to let this method
 // start a span for the request or attach one later.
-func (t *tracker) StartSpanFromContext(ctx context.Context) context.Context {
+func (t *tracker) StartSpanFromContext(ctx context.Context) (context.Context, error) {
+	var err error
 	t.startedAt = time.Now()
 
 	opts := []ddtrace.StartSpanOption{
@@ -62,9 +62,12 @@ func (t *tracker) StartSpanFromContext(ctx context.Context) context.Context {
 		tracer.StartTime(t.startedAt),
 	}
 
-	t.span, ctx = StartSpanFromContext(ctx, t.profile.Role, opts...)
+	ctx, t.span, err = StartSpanFromContext(ctx, t.profile.Role, opts...)
+	if err != nil {
+		return nil, err
+	}
 
-	return ctx
+	return ctx, nil
 }
 
 // finishWithError end a request's monitoring session. If there is a span ongoing, it will

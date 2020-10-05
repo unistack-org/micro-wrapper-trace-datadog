@@ -2,12 +2,10 @@
 package datadog
 
 import (
-	"github.com/micro/go-micro/v2/registry"
-
 	"context"
 
-	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/server"
+	"github.com/unistack-org/micro/v3/client"
+	"github.com/unistack-org/micro/v3/server"
 )
 
 var noDebugStack = true
@@ -23,7 +21,10 @@ type ddWrapper struct {
 
 func (d *ddWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) (err error) {
 	t := newRequestTracker(req, ClientProfile)
-	ctx = t.StartSpanFromContext(ctx)
+	ctx, err = t.StartSpanFromContext(ctx)
+	if err != nil {
+		return err
+	}
 
 	defer func() {
 		t.finishWithError(err, noDebugStack)
@@ -35,7 +36,10 @@ func (d *ddWrapper) Call(ctx context.Context, req client.Request, rsp interface{
 
 func (d *ddWrapper) Publish(ctx context.Context, p client.Message, opts ...client.PublishOption) (err error) {
 	t := newEventTracker(p, ClientProfile)
-	ctx = t.StartSpanFromContext(ctx)
+	ctx, err = t.StartSpanFromContext(ctx)
+	if err != nil {
+		return err
+	}
 
 	defer func() {
 		t.finishWithError(err, noDebugStack)
@@ -55,15 +59,17 @@ func NewClientWrapper() client.Wrapper {
 // NewCallWrapper returns a Call Wrapper
 func NewCallWrapper() client.CallWrapper {
 	return func(cf client.CallFunc) client.CallFunc {
-		return func(ctx context.Context, node *registry.Node, req client.Request, rsp interface{}, opts client.CallOptions) error {
+		return func(ctx context.Context, addr string, req client.Request, rsp interface{}, opts client.CallOptions) (err error) {
 			t := newRequestTracker(req, ClientProfile)
-			ctx = t.StartSpanFromContext(ctx)
-
+			ctx, err = t.StartSpanFromContext(ctx)
+			if err != nil {
+				return err
+			}
 			defer func() {
-				t.finishWithError(nil, noDebugStack)
+				t.finishWithError(err, noDebugStack)
 			}()
-
-			return cf(ctx, node, req, rsp, opts)
+			err = cf(ctx, addr, req, rsp, opts)
+			return
 		}
 	}
 }
@@ -74,7 +80,11 @@ func NewHandlerWrapper() server.HandlerWrapper {
 		return func(ctx context.Context, req server.Request, rsp interface{}) (err error) {
 			if req.Endpoint() != "Debug.Health" {
 				t := newRequestTracker(req, ServerProfile)
-				ctx = t.StartSpanFromContext(ctx)
+				ctx, err = t.StartSpanFromContext(ctx)
+				if err != nil {
+					return err
+				}
+
 				defer func() {
 					t.finishWithError(err, noDebugStack)
 				}()
@@ -92,7 +102,10 @@ func NewSubscriberWrapper() server.SubscriberWrapper {
 	return func(next server.SubscriberFunc) server.SubscriberFunc {
 		return func(ctx context.Context, msg server.Message) (err error) {
 			t := newEventTracker(msg, ServerProfile)
-			ctx = t.StartSpanFromContext(ctx)
+			ctx, err = t.StartSpanFromContext(ctx)
+			if err != nil {
+				return err
+			}
 			defer func() {
 				t.finishWithError(err, noDebugStack)
 			}()
