@@ -12,4 +12,4 @@ require (
 	gopkg.in/DataDog/dd-trace-go.v1 v1.28.0
 )
 
-replace github.com/coreos/etcd => github.com/ozonru/etcd v3.3.20-grpc1.27-origmodule+incompatible
+replace github.com/coreos/etcd => github.com/ozonru/etcd v3.4.7+incompatible
