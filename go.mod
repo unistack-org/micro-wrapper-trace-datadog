@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.5.1
 	google.golang.org/grpc v1.35.0
-	gopkg.in/DataDog/dd-trace-go.v1 v1.28.0
+	gopkg.in/DataDog/dd-trace-go.v1 v1.30.0
 )
 
 replace github.com/coreos/etcd => github.com/ozonru/etcd v3.3.20-grpc1.27-origmodule+incompatible
